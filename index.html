@@ -6,7 +6,7 @@
     <title>百工百業 LINE OA商業轉換規劃顧問助手 - TONY 老師專屬工具</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Marked.js for Markdown parsing -->
+    <!-- Marked.js for Markdown parsing (fallback & inline formatting) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,15 +26,23 @@
             }
         }
     </script>
+
     <style>
-        /* Markdown Styles */
-        .prose h2 { font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-        .prose h3 { font-size: 1.25rem; font-weight: bold; color: #374151; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .prose p { margin-bottom: 1rem; line-height: 1.6; color: #4b5563; }
+        /* Document Styles */
+        .prose h2 { font-size: 1.25rem; font-weight: bold; color: #1f2937; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .prose h3 { font-size: 1.1rem; font-weight: bold; color: #374151; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .prose p { margin-bottom: 1rem; line-height: 1.7; color: #4b5563; }
         .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #4b5563; }
-        .prose li { margin-bottom: 0.25rem; }
+        .prose li { margin-bottom: 0.5rem; line-height: 1.6; }
         .prose strong { color: #111827; font-weight: 600; }
         
+        /* Table Styles for JSON generated templates */
+        .prose table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1.5rem; text-align: left; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); border-radius: 0.5rem; overflow: hidden; }
+        .prose th, .prose td { border: 1px solid #e5e7eb; padding: 0.875rem; }
+        .prose th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+        .prose tr:nth-child(even) { background-color: #f9fafb; }
+        
+        /* Loading Animation */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #06C755;
@@ -47,16 +55,10 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Markdown Table Styles Fix */
-        .prose table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1.5rem; text-align: left; }
-        .prose th, .prose td { border: 1px solid #d1d5db; padding: 0.75rem; }
-        .prose th { background-color: #f3f4f6; font-weight: bold; color: #374151; }
-        .prose tr:nth-child(even) { background-color: #f9fafb; }
         
-        /* History Item Hover */
         .history-item:hover { background-color: #e6f9ed; border-color: #06C755; }
 
-        /* Custom Scrollbar for Modals */
+        /* Custom Scrollbars */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -65,12 +67,12 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- API Key Input Section (Safe Area 調整：適度留白，優雅防遮擋) -->
+    <!-- API Key Input Section (Safe Area: pt-16 lg:pt-20 for notch/browser UI safety) -->
     <div class="bg-slate-800 text-white px-4 pb-4 pt-16 lg:pt-20 no-print shadow-md relative z-50">
         <div class="max-w-6xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-key text-line"></i>
-                <span class="font-medium text-sm sm:text-base">系統設定：Gemini 3.5 Flash 引擎 (雲端同步中)</span>
+                <span class="font-medium text-sm sm:text-base">系統設定：Gemini 3.8 Flash (結構化生成模式)</span>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                 <input type="password" id="apiKeyInput" placeholder="請輸入您的 Gemini API Key" 
@@ -90,10 +92,8 @@
         </div>
     </div>
 
-    <!-- Header / Logo & TONY Profile Icon -->
     <header class="bg-white shadow-sm no-print relative z-30">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Left: Logo and Title -->
             <div class="flex items-center gap-3 md:gap-4">
                 <img src="https://i.postimg.cc/fT2sQW09/1.png" alt="Logo" class="h-10 md:h-14 object-contain">
                 <div>
@@ -102,7 +102,6 @@
                 </div>
             </div>
             
-            <!-- Right: TONY 顧問 Profile Button -->
             <button id="btnOpenProfile" class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 p-1.5 md:px-3 md:py-2 rounded-full md:rounded-lg shadow-sm transition-all group">
                 <img src="https://i.postimg.cc/Gh8Zt7SX/S_56844323.jpg" alt="TONY 顧問" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-line group-hover:ring-2 group-hover:ring-line-light">
                 <div class="hidden md:block text-left pr-1">
@@ -113,13 +112,11 @@
         </div>
     </header>
 
-    <!-- Main Content (Using CSS Grid for stable layout) -->
     <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Left Column: Form & History -->
         <div class="col-span-1 flex flex-col gap-6 no-print">
             
-            <!-- History Record Card -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-md font-bold text-gray-800 border-l-4 border-line pl-2">歷史提案紀錄</h3>
@@ -130,24 +127,21 @@
                     <p class="text-sm text-gray-400 italic text-center py-4">載入中...</p>
                 </div>
                 
-                <!-- 本機匯出入功能 -->
                 <div class="flex gap-2 pt-3 border-t border-gray-100">
                     <button id="btnExportLocal" class="flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 text-xs py-1.5 rounded transition flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-download"></i> 下載本機備份
+                        <i class="fa-solid fa-download"></i> 下載備份
                     </button>
                     <button id="btnImportLocal" class="flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-600 text-xs py-1.5 rounded transition flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-upload"></i> 上傳本機備份
+                        <i class="fa-solid fa-upload"></i> 上傳備份
                     </button>
                     <input type="file" id="fileInput" accept=".json" class="hidden">
                 </div>
             </div>
 
-            <!-- Input Form Card -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                 <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-line pl-2">1. 企業現況與需求評估</h3>
                 
                 <form id="consultForm" class="space-y-4">
-                    <!-- 產業類型 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">產業類型 <span class="text-red-500">*</span></label>
                         <select id="industry" required class="w-full border border-gray-300 rounded p-2 focus:ring-line focus:border-line mb-2 text-sm">
@@ -158,11 +152,7 @@
                             <option value="教育培訓">教育培訓 (補習班、才藝班)</option>
                             <option value="顧問服務">顧問服務 (企管顧問、設計公司)</option>
                             <option value="房仲仲介">房仲仲介 (房屋買賣、租賃)</option>
-                            <option value="壽險保險">壽險保險 (保險業務團隊)</option>
                             <option value="醫療健康">醫療健康 (診所、藥局、中藥行)</option>
-                            <option value="旅宿觀光">旅宿觀光 (民宿、飯店、旅行社)</option>
-                            <option value="維修到府服務">維修到府服務 (水電、清潔、洗衣)</option>
-                            <option value="製造 / B2B 服務">製造 / B2B 服務</option>
                             <option value="其他">其他百工百業 (自行填寫)</option>
                         </select>
                         <div id="otherIndustryContainer" class="hidden">
@@ -170,143 +160,91 @@
                         </div>
                     </div>
 
-                    <!-- 品牌名稱 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">真實品牌/店家名稱 <span class="text-red-500">*</span></label>
                         <input type="text" id="brandName" required placeholder="例如：星巴克" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-line focus:border-line">
-                        <p class="text-[11px] text-gray-500 mt-1"><i class="fa-solid fa-earth-americas text-line"></i> 將自動連網搜尋此品牌擷取真實情報。</p>
                     </div>
 
-                    <!-- 商業模式 -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">商業模式</label>
                         <select id="businessModel" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-line focus:border-line">
                             <option value="實體門市為主 (B2C)">實體門市為主 (B2C)</option>
                             <option value="純線上服務/電商 (B2C)">純線上服務/電商 (B2C)</option>
                             <option value="企業對企業 (B2B)">企業對企業 (B2B)</option>
-                            <option value="個人專業服務 (如業務、教練)">個人專業服務 (如業務、教練)</option>
                         </select>
                     </div>
 
-                    <!-- 【Pro 升級】進階策略設定區塊 -->
                     <div class="bg-pro-light p-4 rounded-lg border border-purple-200 shadow-sm mt-6">
                         <label class="block text-sm font-bold text-pro mb-3">
                             <i class="fa-solid fa-chess-knight mr-1"></i> 👑 進階策略設定
                         </label>
-
                         <div class="mb-3">
                             <label class="block text-xs font-medium text-gray-700 mb-1">🎯 首要商業目標</label>
                             <select id="mainGoal" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-pro focus:border-pro">
                                 <option value="導流實體門市與預約">導流實體門市與預約</option>
                                 <option value="提升線上結帳與客單價">提升線上結帳與客單價</option>
-                                <option value="降低客服人力成本">降低客服人力成本 (自動化導向)</option>
-                                <option value="深耕會員與熟客經營">深耕會員與熟客經營 (忠誠度導向)</option>
-                                <option value="名單收集與潛在客戶開發">名單收集與潛在客戶開發 (B2B)</option>
+                                <option value="深耕會員與熟客經營">深耕會員與熟客經營</option>
                             </select>
                         </div>
-
                         <div class="mb-3">
                             <label class="block text-xs font-medium text-gray-700 mb-1">🎭 品牌對話語氣</label>
                             <select id="brandTone" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-pro focus:border-pro">
-                                <option value="熱情親切">熱情親切 (如朋友般、有溫度)</option>
                                 <option value="專業嚴謹">專業嚴謹 (具權威感、值得信賴)</option>
-                                <option value="幽默逗趣">幽默逗趣 (活潑、愛開玩笑、網路梗)</option>
-                                <option value="高端奢華">高端奢華 (優雅、距離感、尊榮服務)</option>
-                                <option value="溫柔療癒">溫柔療癒 (同理心、安定感、無壓力)</option>
+                                <option value="熱情親切">熱情親切 (如朋友般、有溫度)</option>
                             </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">👥 目標客群 (TA) 輪廓</label>
-                            <input type="text" id="targetAudience" placeholder="例如：25-35歲粉領族..." class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-pro focus:border-pro">
                         </div>
                     </div>
 
-                    <!-- 圖文選單設計風格 -->
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">圖文選單設計風格</label>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 mt-4">圖文選單設計風格</label>
                         <select id="designStyle" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-line focus:border-line">
-                            <option value="專業簡潔風">1️⃣ 專業簡潔風 (適用: 顧問/教育/B2B)</option>
-                            <option value="商業活潑風">2️⃣ 商業活潑風 (適用: 餐飲/零售/美業)</option>
-                            <option value="高端質感風">3️⃣ 高端質感風 (適用: 高單價服務/品牌)</option>
-                            <option value="溫暖生活風">4️⃣ 溫暖生活風 (適用: 親子/健康/手作)</option>
+                            <option value="專業簡潔風">1️⃣ 專業簡潔風</option>
+                            <option value="商業活潑風">2️⃣ 商業活潑風</option>
                         </select>
                     </div>
 
-                    <!-- 核心需求勾選 -->
                     <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-4">
                         <label class="block text-sm font-medium text-gray-800 mb-2">
                             <i class="fa-solid fa-list-check text-line mr-1"></i> 希望建立的功能？ (可複選)
                         </label>
-
-                        <div class="mb-3">
-                            <span class="text-xs font-bold text-gray-500 mb-1 block">服務與自動化</span>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="線上預約/排位" class="text-line focus:ring-line rounded"> <span>線上預約/排位</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="自動客服/FAQ" class="text-line focus:ring-line rounded"> <span>自動客服/FAQ</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="表單報價/詢價" class="text-line focus:ring-line rounded"> <span>表單報價/詢價</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="維修報修/進度" class="text-line focus:ring-line rounded"> <span>報修/進度查詢</span></label>
-                            </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border"><input type="checkbox" name="needs" value="線上預約" class="text-line"> <span>線上預約</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border"><input type="checkbox" name="needs" value="自動客服FAQ" class="text-line"> <span>自動客服FAQ</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border"><input type="checkbox" name="needs" value="活動促銷" class="text-line"> <span>活動促銷推播</span></label>
+                            <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border"><input type="checkbox" name="needs" value="數位集點卡" class="text-line"> <span>數位集點卡</span></label>
                         </div>
-
-                        <div class="mb-3">
-                            <span class="text-xs font-bold text-gray-500 mb-1 block">行銷與導購</span>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="活動促銷推播" class="text-line focus:ring-line rounded"> <span>活動促銷推播</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="型錄展示/作品集" class="text-line focus:ring-line rounded"> <span>型錄展示/作品集</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="線上點餐/購物" class="text-line focus:ring-line rounded"> <span>線上點餐/購物</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="優惠券/抽獎" class="text-line focus:ring-line rounded"> <span>優惠券/抽獎</span></label>
-                            </div>
-                        </div>
-
-                        <div class="mb-2">
-                            <span class="text-xs font-bold text-gray-500 mb-1 block">會員與回流</span>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="數位集點卡" class="text-line focus:ring-line rounded"> <span>數位集點卡</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="會員分眾貼標籤" class="text-line focus:ring-line rounded"> <span>會員分眾貼標籤</span></label>
-                                <label class="flex items-center space-x-2 bg-white p-2 rounded cursor-pointer border hover:border-line"><input type="checkbox" name="needs" value="售後關懷/提醒" class="text-line focus:ring-line rounded"> <span>售後關懷/提醒</span></label>
-                            </div>
-                        </div>
-                        <input type="text" id="otherNeeds" placeholder="其他未列出的功能需求..." class="w-full border border-dashed border-gray-300 bg-white rounded p-2 text-sm focus:ring-line focus:border-line mt-2">
                     </div>
 
-                    <!-- 目前痛點 -->
                     <div class="bg-red-50 p-4 rounded-lg border border-red-100 shadow-sm mt-4">
                         <label class="block text-sm font-medium text-red-800 mb-1">
-                            <i class="fa-solid fa-face-frown text-red-500 mr-1"></i> 您目前經營上的「最大痛點」？
+                            <i class="fa-solid fa-face-frown text-red-500 mr-1"></i> 您目前的「最大痛點」？
                         </label>
-                        <textarea id="painPoints" rows="3" placeholder="例如：客服人力吃緊、客人難養成回頭客..." class="w-full border border-red-200 rounded p-2 focus:ring-red-400 focus:border-red-400 text-sm bg-white"></textarea>
+                        <textarea id="painPoints" rows="3" class="w-full border border-red-200 rounded p-2 text-sm bg-white"></textarea>
                     </div>
 
                     <button type="submit" class="w-full bg-line hover:bg-line-dark text-white font-bold py-3 px-4 rounded-lg shadow transition-all flex justify-center items-center gap-2 mt-4">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> 
-                        啟動全網搜尋與顧問深度分析
+                        啟動深度分析 (強制 JSON 生成)
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Right Column: Output / Report Area -->
         <div class="col-span-1 lg:col-span-2 flex flex-col">
             
-            <!-- Default Empty State -->
             <div id="emptyState" class="h-full flex flex-col items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-10 text-center no-print min-h-[600px]">
                 <img src="https://i.postimg.cc/fT2sQW09/1.png" alt="Logo" class="h-24 opacity-20 mb-6 grayscale">
                 <h3 class="text-xl font-bold text-gray-400 mb-2">等待產出建置規劃書</h3>
-                <p class="text-gray-400 max-w-sm text-sm">請填寫左側的企業現況表單，AI 顧問將自動上網搜尋該企業真實情報，為您生成專屬的 LINE OA 定位與規劃。</p>
+                <p class="text-gray-400 text-sm">請填寫表單，AI 將生成 100% 穩定且排版完美的 JSON 驅動報告。</p>
             </div>
 
-            <!-- Loading State -->
             <div id="loadingState" class="hidden h-full flex flex-col items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 p-10 min-h-[600px]">
                 <div class="loader mb-4"></div>
-                <h3 class="text-lg font-bold text-gray-700 animate-pulse">TONY 顧問情報檢索與深度推演中...</h3>
-                <p class="text-sm text-gray-500 mt-2">正在調用 Gemini 3.5 Flash，已解除字數限制，請稍候</p>
+                <h3 class="text-lg font-bold text-gray-700 animate-pulse">TONY 顧問推演與 JSON 結構化編譯中...</h3>
+                <p class="text-sm text-gray-500 mt-2">使用 Gemini 3.8 Flash，並進行自動容錯解析，請稍候</p>
             </div>
 
-            <!-- Result Report Area -->
             <div id="resultState" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 h-fit">
-                
-                <!-- Action Bar -->
                 <div class="bg-gray-50 border-b border-gray-100 p-4 flex flex-wrap justify-between items-center rounded-t-xl gap-2">
                     <h3 class="font-bold text-gray-800"><i class="fa-regular fa-file-lines text-line mr-2"></i>LINE OA 商業轉換提案書</h3>
                     <div class="flex gap-2 flex-wrap">
@@ -319,9 +257,7 @@
                     </div>
                 </div>
 
-                <!-- Report Content -->
                 <div class="p-6 sm:p-8">
-                    <!-- Report Header -->
                     <div class="border-b-2 border-line pb-6 mb-6">
                         <div class="flex justify-between items-start">
                             <div>
@@ -333,48 +269,31 @@
                         </div>
                     </div>
 
-                    <!-- Markdown Content Container -->
-                    <div id="markdownOutput" class="prose max-w-none text-sm sm:text-base">
-                        <!-- AI content will be injected here -->
-                    </div>
-
-                    <!-- Truncation Warning -->
-                    <div id="truncationWarning" class="hidden mt-6 p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm">
-                        <div class="flex items-start gap-3">
-                            <i class="fa-solid fa-circle-exclamation text-red-500 mt-1 text-lg"></i>
-                            <div>
-                                <h4 class="font-bold text-red-800">⚠️ 系統警告：AI 產出達到極限字數並被截斷</h4>
-                                <p class="text-xs sm:text-sm text-red-600 mt-1">雖然已全面解除限制，但由於內容極度豐富，仍觸碰到了 AI 引擎單次對話的物理極限。我們已為您保留了前半段精華，建議您可以稍微減少勾選的功能數量再試一次。</p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Report Content Injected Here -->
+                    <div id="reportContainer" class="prose max-w-none text-sm sm:text-base"></div>
 
                     <!-- Grounding Sources -->
                     <div id="groundingSources" class="hidden mt-8 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                        <h4 class="text-sm font-bold text-blue-800 mb-2"><i class="fa-solid fa-magnifying-glass mr-1"></i> AI 實況檢索來源參考</h4>
-                        <ul id="sourcesList" class="text-xs text-blue-600 list-disc list-inside space-y-1">
-                            <!-- Sources injected here -->
-                        </ul>
+                        <h4 class="text-sm font-bold text-blue-800 mb-2"><i class="fa-solid fa-magnifying-glass mr-1"></i> AI 實況檢索來源</h4>
+                        <ul id="sourcesList" class="text-xs text-blue-600 list-disc list-inside space-y-1"></ul>
                     </div>
 
-                    <!-- Report Footer / Signature -->
                     <div class="mt-12 pt-6 border-t border-gray-200 text-right">
                         <p class="font-bold text-gray-800">規劃顧問：TONY 楊文澤</p>
-                        <p class="text-xs text-gray-500 mt-1">百工百業 LINE OA商業轉換規劃顧問助手 生成</p>
+                        <p class="text-xs text-gray-500 mt-1">百工百業 LINE OA商業轉換規劃顧問助手 (結構化驅動)</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-slate-800 text-gray-400 py-6 mt-auto text-center text-sm no-print">
         <div class="max-w-6xl mx-auto px-4">
-            <p>© 2026 TONY STUDIO. 本教材由 TONY STUDIO 楊文澤顧問設計. All Rights Reserved.</p>
+            <p>&copy; 2020 TonyStudio (TONY 楊文澤顧問). All Rights Reserved.</p>
         </div>
     </footer>
 
-    <!-- Custom Modal for Alerts (Replaces window.alert) -->
+    <!-- Custom Alerts & Modals -->
     <div id="alertModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 text-center transform transition-all relative">
             <div id="alertIcon" class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -382,176 +301,114 @@
             </div>
             <h3 id="alertTitle" class="text-xl font-bold text-gray-900 mb-2">提示</h3>
             <p id="alertMessage" class="text-sm text-gray-600 mb-6"></p>
-            <button id="btnCloseAlert" class="bg-line hover:bg-line-dark text-white font-bold py-2 px-6 rounded-lg w-full transition">
-                我知道了
-            </button>
+            <button id="btnCloseAlert" class="bg-line hover:bg-line-dark text-white font-bold py-2 px-6 rounded-lg w-full transition">我知道了</button>
         </div>
     </div>
 
-    <!-- Custom Modal for Confirmation (Replaces window.confirm) -->
     <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center px-4 backdrop-blur-sm">
-        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 text-center transform transition-all relative">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 text-center">
             <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fa-solid fa-trash-can text-3xl text-red-500"></i>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">確認刪除</h3>
             <p class="text-sm text-gray-600 mb-6">確定要刪除這筆提案紀錄嗎？此動作無法復原。</p>
             <div class="flex gap-3">
-                <button id="btnCancelConfirm" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
-                    取消
-                </button>
-                <button id="btnAcceptConfirm" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition">
-                    確定刪除
-                </button>
+                <button id="btnCancelConfirm" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">取消</button>
+                <button id="btnAcceptConfirm" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">確定刪除</button>
             </div>
         </div>
     </div>
 
-    <!-- TONY 顧問 Profile Modal -->
+    <!-- TONY Profile Modal -->
     <div id="profileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center px-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all relative">
             <div class="bg-gradient-to-r from-line to-line-dark h-3"></div>
-            <div class="p-6 sm:p-8 relative max-h-[85vh] overflow-y-auto custom-scrollbar">
+            <div class="p-6 relative max-h-[85vh] overflow-y-auto">
                 <button id="btnCloseProfile" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition bg-gray-100 hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
-                
-                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6 mt-2 text-center sm:text-left">
-                    <img src="https://i.postimg.cc/Gh8Zt7SX/S_56844323.jpg" alt="TONY 楊文澤 老師" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md ring-2 ring-line-light">
-                    <div class="pt-2">
-                        <h2 class="text-2xl font-bold text-gray-900">TONY 楊文澤 老師</h2>
-                        <p class="text-line font-bold text-sm mt-1 bg-line-light inline-block px-2 py-0.5 rounded text-line-dark">資深數位行銷科技顧問</p>
-                        <p class="text-gray-500 text-sm mt-1">生成式 AI 創作者 / 創業導師</p>
+                <div class="flex items-center gap-5 mb-4 mt-2">
+                    <img src="https://i.postimg.cc/Gh8Zt7SX/S_56844323.jpg" class="w-20 h-20 rounded-full border-2 border-line">
+                    <div>
+                        <h2 class="text-xl font-bold">TONY 楊文澤</h2>
+                        <p class="text-line text-sm font-bold bg-line-light inline-block px-1 rounded mt-1">資深數位顧問</p>
                     </div>
                 </div>
-                
-                <div class="space-y-5 text-sm text-gray-700">
-                    <div>
-                        <span class="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-1 mb-2">
-                            <i class="fa-solid fa-briefcase text-line"></i> 現職 Current
-                        </span>
-                        <ul class="space-y-1 pl-6 list-disc marker:text-gray-300">
-                            <li>龍華科大 數位行銷講師</li>
-                            <li>智策慧 品牌行銷科技顧問</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <span class="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-1 mb-2">
-                            <i class="fa-solid fa-star text-line"></i> 經歷 Experience
-                        </span>
-                        <ul class="space-y-1 pl-6 list-disc marker:text-gray-300">
-                            <li>脈動心聯股份有限公司 創辦人暨執行長</li>
-                            <li>宏碁集團建碁 AOPEN 全球品牌行銷總監 / 企業發言人</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <span class="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-1 mb-2">
-                            <i class="fa-solid fa-chalkboard-user text-line"></i> 專家授課經歷
-                        </span>
-                        <ul class="space-y-1 pl-6 list-disc marker:text-gray-300">
-                            <li>CPC 生產力中心 經營管理顧問師班 講師</li>
-                            <li>2021 MarTech 行銷科技行銷長認證班 講師</li>
-                            <li>2025 新光人壽 AI 工具應用 企業內訓講師</li>
-                        </ul>
-                    </div>
-                </div>
+                <p class="text-sm text-gray-600">資深品牌行銷科技顧問、創業導師，擁有多項產學界專家授課經驗。</p>
             </div>
         </div>
     </div>
 
-    <!-- Application Logic Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, query, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Variables
         const API_KEY_STORAGE_KEY = 'tony_line_oa_api_key';
-        let localHistoryState = []; // Maintains history array in memory
-        
-        // Firebase Setup
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tony-line-oa-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        let localHistoryState = [];
         let db = null;
         let auth = null;
         let currentUserId = null;
         let unsubscribeHistory = null;
-
-        // Init Firebase
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tony-line-oa-app';
+        
         async function initFirebase() {
-            if (!firebaseConfig) {
-                console.warn("No Firebase config found. Running in local-only mode.");
-                return;
-            }
             try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                if (!firebaseConfig) {
+                    console.log("Local Mode: Firebase config missing.");
+                    return;
+                }
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                
                 const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (initialToken) {
-                    await signInWithCustomToken(auth, initialToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                currentUserId = auth.currentUser?.uid;
                 
-                if (currentUserId) {
-                    setupCloudSync();
-                }
+                if (initialToken) await signInWithCustomToken(auth, initialToken);
+                else await signInAnonymously(auth);
+                
+                currentUserId = auth.currentUser?.uid;
+                if (currentUserId) setupCloudSync();
             } catch (err) {
-                console.error("Firebase Initialization Error:", err);
+                console.warn("Firebase Init fallback to Local Mode:", err.message);
             }
         }
 
-        // Setup Firestore Listener
         function setupCloudSync() {
             if (!db || !currentUserId) return;
+            if (unsubscribeHistory) unsubscribeHistory(); // Prevent memory leaks
             const historyRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'history');
-            
             unsubscribeHistory = onSnapshot(historyRef, (snapshot) => {
                 let cloudData = [];
-                snapshot.forEach(doc => {
-                    cloudData.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Sort by timestamp descending
+                snapshot.forEach(doc => cloudData.push({ id: doc.id, ...doc.data() }));
                 localHistoryState = cloudData.sort((a, b) => b.timestamp - a.timestamp);
                 renderHistoryList();
-            }, (error) => {
-                console.error("Cloud sync error:", error);
-            });
+            }, (error) => console.error("Sync error:", error));
         }
 
-        // UI Event Binding (Wait for DOM)
         document.addEventListener('DOMContentLoaded', () => {
             initFirebase();
-            
-            // Load saved API Key
             const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY) || sessionStorage.getItem(API_KEY_STORAGE_KEY);
-            if (savedKey) {
-                document.getElementById('apiKeyInput').value = savedKey;
-            }
+            if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
 
-            // Bind UI Buttons
+            bindEvents();
+        });
+
+        function bindEvents() {
             document.getElementById('btnSaveApiKey').addEventListener('click', handleSaveApiKey);
             document.getElementById('btnClearApiKey').addEventListener('click', handleClearApiKey);
             document.getElementById('btnOpenProfile').addEventListener('click', () => toggleModal('profileModal', true));
             document.getElementById('btnCloseProfile').addEventListener('click', () => toggleModal('profileModal', false));
             document.getElementById('btnCloseAlert').addEventListener('click', () => toggleModal('alertModal', false));
-            
             document.getElementById('industry').addEventListener('change', handleIndustryChange);
             document.getElementById('consultForm').addEventListener('submit', handleFormSubmit);
             document.getElementById('btnCopyReport').addEventListener('click', handleCopyReport);
             document.getElementById('btnExportWord').addEventListener('click', handleExportWord);
-            
-            // Local JSON Export/Import
             document.getElementById('btnExportLocal').addEventListener('click', handleExportLocalJSON);
             document.getElementById('btnImportLocal').addEventListener('click', () => document.getElementById('fileInput').click());
             document.getElementById('fileInput').addEventListener('change', handleImportLocalJSON);
-        });
+        }
 
-        // --- Custom UI Functions ---
         function toggleModal(id, show) {
             const modal = document.getElementById(id);
             if (show) modal.classList.remove('hidden');
@@ -561,7 +418,6 @@
         function showCustomAlert(title, message, isError = false) {
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertMessage').innerText = message;
-            
             const iconContainer = document.getElementById('alertIcon');
             if (isError) {
                 iconContainer.className = "w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4";
@@ -578,31 +434,18 @@
             confirmCallback = callback;
             toggleModal('confirmModal', true);
         }
-        document.getElementById('btnCancelConfirm').addEventListener('click', () => {
-            confirmCallback = null;
-            toggleModal('confirmModal', false);
-        });
-        document.getElementById('btnAcceptConfirm').addEventListener('click', () => {
-            if (confirmCallback) confirmCallback();
-            toggleModal('confirmModal', false);
-        });
+        document.getElementById('btnCancelConfirm').addEventListener('click', () => { confirmCallback = null; toggleModal('confirmModal', false); });
+        document.getElementById('btnAcceptConfirm').addEventListener('click', () => { if (confirmCallback) confirmCallback(); toggleModal('confirmModal', false); });
 
         function showState(stateId) {
-            ['emptyState', 'loadingState', 'resultState'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
+            ['emptyState', 'loadingState', 'resultState'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(stateId).classList.remove('hidden');
         }
 
-        // --- Core Functions ---
         function handleSaveApiKey() {
             const key = document.getElementById('apiKeyInput').value.trim();
-            if (key) {
-                localStorage.setItem(API_KEY_STORAGE_KEY, key); // Fallback to localStorage just for the key to avoid asking every refresh
-                showCustomAlert('成功', 'API Key 已安全儲存於瀏覽器中。');
-            } else {
-                showCustomAlert('錯誤', '請輸入有效的 API Key。', true);
-            }
+            if (key) { localStorage.setItem(API_KEY_STORAGE_KEY, key); showCustomAlert('成功', 'API Key 已安全儲存。'); } 
+            else showCustomAlert('錯誤', '請輸入有效的 API Key。', true);
         }
 
         function handleClearApiKey() {
@@ -612,295 +455,178 @@
         }
 
         function handleIndustryChange(e) {
-            const container = document.getElementById('otherIndustryContainer');
-            const input = document.getElementById('otherIndustry');
-            if (e.target.value === '其他') {
-                container.classList.remove('hidden');
-                input.setAttribute('required', 'true');
-            } else {
-                container.classList.add('hidden');
-                input.removeAttribute('required');
-                input.value = '';
-            }
+            const c = document.getElementById('otherIndustryContainer');
+            const i = document.getElementById('otherIndustry');
+            if (e.target.value === '其他') { c.classList.remove('hidden'); i.setAttribute('required', 'true'); } 
+            else { c.classList.add('hidden'); i.removeAttribute('required'); i.value = ''; }
         }
 
-        async function saveToHistory(brandName, industry, content, sourcesHtml) {
-            const timestamp = Date.now();
-            const docId = `doc_${timestamp}`;
-            const newItem = {
-                id: docId,
-                timestamp: timestamp,
-                brandName: brandName,
-                industry: industry,
-                content: content,
-                sources: sourcesHtml
-            };
-
-            // Cloud Save
-            if (db && currentUserId) {
+        function extractAndParseJSON(rawText) {
+            // Enterprise level JSON extraction fallback
+            try {
+                return JSON.parse(rawText);
+            } catch (e1) {
+                console.warn("Direct JSON parse failed, attempting extraction...", e1);
                 try {
-                    const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'history', docId);
-                    await setDoc(docRef, newItem);
-                } catch(e) {
-                    console.error("Cloud save failed:", e);
-                }
-            } else {
-                // Local only fallback
-                localHistoryState.unshift(newItem);
-                if(localHistoryState.length > 20) localHistoryState.pop();
-                renderHistoryList();
-            }
-        }
-
-        async function deleteHistory(id) {
-            if (db && currentUserId) {
-                try {
-                    const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'history', id);
-                    await deleteDoc(docRef);
-                } catch(e) {
-                    console.error("Cloud delete failed:", e);
-                }
-            } else {
-                localHistoryState = localHistoryState.filter(item => item.id !== id);
-                renderHistoryList();
-            }
-        }
-
-        function renderHistoryList() {
-            const listContainer = document.getElementById('historyList');
-            document.getElementById('historyCount').innerText = `${localHistoryState.length} 筆`;
-
-            if (localHistoryState.length === 0) {
-                listContainer.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">尚無紀錄</p>';
-                return;
-            }
-
-            listContainer.innerHTML = '';
-            localHistoryState.forEach(item => {
-                const date = new Date(item.timestamp);
-                const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                
-                const div = document.createElement('div');
-                div.className = 'history-item border border-gray-200 rounded p-2 cursor-pointer transition flex justify-between items-center group mb-2 bg-white';
-                
-                const textContainer = document.createElement('div');
-                textContainer.className = "flex-grow overflow-hidden";
-                textContainer.onclick = () => loadHistoryIntoView(item.id);
-                textContainer.innerHTML = `
-                    <div class="font-bold text-sm text-gray-800 truncate">${item.brandName}</div>
-                    <div class="text-xs text-gray-500 flex justify-between">
-                        <span class="truncate pr-2">${item.industry}</span>
-                        <span>${dateStr}</span>
-                    </div>
-                `;
-
-                const delBtn = document.createElement('button');
-                delBtn.className = "text-red-400 hover:text-red-600 px-2 opacity-0 group-hover:opacity-100 transition";
-                delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
-                delBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    showCustomConfirm(() => deleteHistory(item.id));
-                };
-
-                div.appendChild(textContainer);
-                div.appendChild(delBtn);
-                listContainer.appendChild(div);
-            });
-        }
-
-        function loadHistoryIntoView(id) {
-            const item = localHistoryState.find(h => h.id === id);
-            if (!item) return;
-
-            document.getElementById('reportBrand').innerText = item.brandName;
-            document.getElementById('reportIndustry').innerText = item.industry;
-            document.getElementById('markdownOutput').innerHTML = marked.parse(item.content);
-            
-            const sourcesDiv = document.getElementById('groundingSources');
-            if (item.sources) {
-                document.getElementById('sourcesList').innerHTML = item.sources;
-                sourcesDiv.classList.remove('hidden');
-            } else {
-                sourcesDiv.classList.add('hidden');
-            }
-            
-            document.getElementById('truncationWarning').classList.add('hidden');
-            document.getElementById('brandName').value = item.brandName; // Populate form partially
-            
-            showState('resultState');
-            
-            // Scroll right panel top
-            const resultPanel = document.getElementById('resultState');
-            if(window.innerWidth < 1024) {
-                 resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                 window.scrollTo({top: 0, behavior: 'smooth'});
-            }
-        }
-
-        function handleExportLocalJSON() {
-            if (localHistoryState.length === 0) {
-                showCustomAlert('提示', '目前沒有任何歷史紀錄可以匯出。');
-                return;
-            }
-            const dataStr = JSON.stringify(localHistoryState, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const date = new Date();
-            const dateString = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
-            a.download = `TONY_顧問紀錄備份_${dateString}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function handleImportLocalJSON(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const importedData = JSON.parse(event.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("Invalid format");
-                    
-                    let importedCount = 0;
-                    // Save to cloud if available, otherwise just merge locally
-                    for (const item of importedData) {
-                        if (item.id && item.timestamp && item.brandName) {
-                            if (db && currentUserId) {
-                                const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'history', item.id);
-                                await setDoc(docRef, item);
-                            } else {
-                                if(!localHistoryState.find(x => x.id === item.id)) {
-                                    localHistoryState.push(item);
-                                }
-                            }
-                            importedCount++;
-                        }
+                    const startIdx = rawText.indexOf('{');
+                    const endIdx = rawText.lastIndexOf('}');
+                    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+                        const jsonStr = rawText.substring(startIdx, endIdx + 1);
+                        return JSON.parse(jsonStr);
                     }
-                    if(!db) {
-                        localHistoryState.sort((a, b) => b.timestamp - a.timestamp);
-                        renderHistoryList();
-                    }
-                    showCustomAlert('匯入成功', `成功匯入了 ${importedCount} 筆提案紀錄。`);
-                } catch (err) {
-                    showCustomAlert('匯入失敗', '檔案格式不正確或損毀。', true);
+                    throw new Error("無法定位有效的 JSON 括號邊界。");
+                } catch (e2) {
+                    console.error("Self-healing extraction failed:", e2);
+                    throw new Error("模型產出的格式嚴重破壞，無法自動修復。");
                 }
-                e.target.value = ''; // Reset file input
-            };
-            reader.readAsText(file);
+            }
+        }
+
+        function renderReportHTML(data) {
+            // Use marked for safe inline rendering of Markdown content inside JSON fields
+            const parseInline = (text) => text ? marked.parseInline(text) : '無資料';
+            const parseBlock = (text) => text ? marked.parse(text) : '<p>無資料</p>';
+
+            let html = '';
+            
+            // 0. 實況情報
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-4 mb-4"><i class="fa-solid fa-magnifying-glass text-line"></i> 0. 企業實況情報分析</h2>`;
+            html += `<ul class="space-y-2 mb-6">`;
+            html += `<li><strong>品牌樣貌：</strong> ${parseInline(data.section0?.brandStatus)}</li>`;
+            html += `<li><strong>數位足跡：</strong> ${parseInline(data.section0?.digitalFootprint)}</li>`;
+            html += `</ul>`;
+
+            // 1. 策略定位
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-6 mb-4"><i class="fa-solid fa-chess-knight text-line"></i> 1. 產業診斷與帳號定位策略</h2>`;
+            html += `<p><strong>建置適配度：</strong> ${parseInline(data.section1?.suitability)}</p>`;
+            html += `<p><strong>角色定位：</strong> ${parseInline(data.section1?.role)}</p>`;
+            html += `<h3 class="font-bold text-gray-700 mt-4 mb-2">三大優先功能：</h3>`;
+            html += `<ul class="list-disc pl-5">`;
+            if(data.section1?.topFeatures) {
+                data.section1.topFeatures.forEach(f => {
+                    html += `<li><strong>${f.name}：</strong> ${parseInline(f.reason)}</li>`;
+                });
+            }
+            html += `</ul>`;
+
+            // 2. 圖文選單
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-6 mb-4"><i class="fa-solid fa-border-all text-line"></i> 2. 圖文選單架構與文案規劃</h2>`;
+            html += `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-2 mb-4 text-sm text-yellow-800">⚠️ 顧問提醒：圖文選單圖片檔案大小不得超過 1MB，請進行壓縮。</div>`;
+            html += `<div class="overflow-x-auto"><table class="w-full text-sm">`;
+            html += `<thead><tr><th>位置</th><th>按鈕文案</th><th>觸發動作</th><th>設計思維</th></tr></thead><tbody>`;
+            if(data.section2?.richMenu) {
+                data.section2.richMenu.forEach(item => {
+                    html += `<tr>
+                        <td class="whitespace-nowrap font-medium text-gray-700">${item.position}</td>
+                        <td class="font-bold text-line-dark">${item.buttonText}</td>
+                        <td>${item.action}</td>
+                        <td class="text-gray-600">${item.design}</td>
+                    </tr>`;
+                });
+            }
+            html += `</tbody></table></div>`;
+
+            // 3. 專屬文案
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-6 mb-4"><i class="fa-solid fa-pen-nib text-line"></i> 3. 專屬對話文案生成</h2>`;
+            html += `<div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                        <span class="text-xs font-bold text-gray-500 mb-1 block">【歡迎訊息範本】</span>
+                        <div class="italic text-gray-700">${parseBlock(data.section3?.welcomeMessage)}</div>
+                     </div>`;
+            
+            html += `<h3 class="font-bold text-gray-700 mt-4 mb-2">常見問題 (FAQ) 自動回覆：</h3>`;
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">`;
+            if(data.section3?.faq) {
+                data.section3.faq.forEach(faq => {
+                    html += `<div class="border border-gray-200 rounded p-3 bg-white shadow-sm">
+                                <div class="font-bold text-line mb-1">Q: ${faq.keyword}</div>
+                                <div class="text-sm text-gray-600">${parseBlock(faq.answer)}</div>
+                             </div>`;
+                });
+            }
+            html += `</div>`;
+            
+            html += `<h3 class="font-bold text-gray-700 mt-4 mb-2">促銷/推播範例：</h3>`;
+            html += `<div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <p class="text-sm text-blue-800 mb-1"><strong>主視覺：</strong> ${data.section3?.pushExample?.visual || ''}</p>
+                        <p class="font-bold text-lg mb-1">${data.section3?.pushExample?.title || ''}</p>
+                        <div class="text-sm mb-2 text-gray-700">${parseBlock(data.section3?.pushExample?.content)}</div>
+                        <p class="text-sm font-bold bg-blue-600 text-white inline-block px-2 py-1 rounded cursor-pointer">👉 ${data.section3?.pushExample?.cta || ''}</p>
+                     </div>`;
+
+            // 4. 客戶旅程
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-6 mb-4"><i class="fa-solid fa-route text-line"></i> 4. 客戶旅程流程設計</h2>`;
+            html += `<ol class="list-decimal pl-5 space-y-2 mb-6">`;
+            html += `<li><strong>吸引加好友：</strong> ${parseInline(data.section4?.step1)}</li>`;
+            html += `<li><strong>初次互動：</strong> ${parseInline(data.section4?.step2)}</li>`;
+            html += `<li><strong>轉換節點：</strong> ${parseInline(data.section4?.step3)}</li>`;
+            html += `<li><strong>售後回流：</strong> ${parseInline(data.section4?.step4)}</li>`;
+            html += `</ol>`;
+
+            // 5. TONY 建議
+            html += `<h2 class="text-xl font-bold border-b-2 border-line pb-2 mt-6 mb-4"><i class="fa-solid fa-lightbulb text-line"></i> 5. TONY 顧問經營建議與 SOP</h2>`;
+            html += `<ul class="space-y-3">`;
+            html += `<li><strong>日常營運 SOP：</strong> ${parseInline(data.section5?.routine)}</li>`;
+            html += `<li class="text-red-700"><strong>痛點解方：</strong> ${parseInline(data.section5?.solution)}</li>`;
+            html += `<li><strong>避坑指南：</strong> ${parseInline(data.section5?.pitfalls)}</li>`;
+            html += `</ul>`;
+
+            return html;
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-
             const apiKey = document.getElementById('apiKeyInput').value.trim();
-            if (!apiKey) {
-                showCustomAlert('缺少 API Key', '請先在頁面頂部輸入您的 Gemini API Key。\n若無金鑰，請點擊右側連結免費申請。', true);
-                return;
-            }
+            if (!apiKey) return showCustomAlert('缺少 API Key', '請輸入 Gemini API Key。', true);
 
-            // Gather Data
+            // Collect Data
             let industry = document.getElementById('industry').value;
             if (industry === '其他') industry = document.getElementById('otherIndustry').value || '未分類產業';
-            
             const brandName = document.getElementById('brandName').value;
             const businessModel = document.getElementById('businessModel').value;
             const painPoints = document.getElementById('painPoints').value || '未填寫';
             const designStyle = document.getElementById('designStyle').value;
-            
             const mainGoal = document.getElementById('mainGoal').value;
             const brandTone = document.getElementById('brandTone').value;
-            const targetAudience = document.getElementById('targetAudience').value || '一般大眾客群';
-
-            const checkboxes = document.querySelectorAll('input[name="needs"]:checked');
-            const needsArray = Array.from(checkboxes).map(cb => cb.value);
-            const otherNeeds = document.getElementById('otherNeeds').value.trim();
-            if (otherNeeds) needsArray.push(otherNeeds);
+            
+            const needsArray = Array.from(document.querySelectorAll('input[name="needs"]:checked')).map(cb => cb.value);
             const needsText = needsArray.length > 0 ? needsArray.join('、') : '一般經營需求';
-
             const fullIndustryStr = `${industry} / ${businessModel}`;
+
             document.getElementById('reportBrand').innerText = brandName;
             document.getElementById('reportIndustry').innerText = fullIndustryStr;
 
             showState('loadingState');
-            document.getElementById('groundingSources').classList.add('hidden');
-            document.getElementById('sourcesList').innerHTML = '';
-            document.getElementById('truncationWarning').classList.add('hidden');
 
+            // Constructing Prompt for STRICT JSON OUTPUT
             const systemInstruction = `
-            你是「百工百業 LINE OA商業轉換規劃顧問助手 + 行業型數位經營策略師」，也就是 TONY 老師的 AI 化身。
+            你是「百工百業 LINE OA商業轉換規劃顧問助手」，即 TONY 老師的 AI 化身。
+            【強制指令：純 JSON 輸出】
+            你必須嚴格輸出一個符合以下結構的 JSON 字串。
+            絕對不可包含任何前言、結語，或 \`\`\`json 標籤。只要直接返回 {...} 的純文字。
             
-            【TONY 老師人設背景】
-            你是一位 60 歲、擁有豐富品牌行銷、行銷科技、生成式 AI 實務經驗的資深顧問與大學講師。你擁有設計、商業與創業的實戰經驗，並曾擔任上市公司 14 年發言人。你的語氣：溫暖、專業、充滿自信、具備深度的商業洞察力，喜歡創新與思考。
-
-            【🔥 顧問級輸出絕對要求】
-            1. 摒棄學生式的簡短條列！你的輸出必須展現「資深企管顧問」的論述深度。每個觀點都要有「Why (為什麼這樣做)」與「How (如何解決痛點)」，具體且專業。
-            2. 系統已完全解除輸出字數限制！請盡情發揮，給出最深入、最詳盡、最豐富的完整論述，絕對不要省略或過度壓縮細節。
-            3. 必須在整份報告的「第 5 模組」最末端加上「[🎯 TONY顧問企劃產出完畢]」作為完工標記，絕不可中斷。
+            Schema 要求：
+            {
+              "section0": { "brandStatus": "品牌現況分析字串", "digitalFootprint": "數位足跡字串" },
+              "section1": { "suitability": "適配度", "role": "角色", "topFeatures": [ {"name":"功能名", "reason":"理由"} ](固定三個) },
+              "section2": { "richMenu": [ {"position":"位置如左上", "buttonText":"按鈕文案", "action":"觸發動作", "design":"設計思維"} ](固定六個) },
+              "section3": { "welcomeMessage": "歡迎詞", "faq": [ {"keyword":"關鍵字", "answer":"回答"} ], "pushExample": { "visual":"視覺", "title":"標題", "content":"內文", "cta":"行動按鈕" } },
+              "section4": { "step1": "流程1", "step2": "流程2", "step3": "流程3", "step4": "流程4" },
+              "section5": { "routine": "經營建議", "solution": "痛點解方", "pitfalls": "避坑指南" }
+            }
             `;
 
             const userPrompt = `
-            【首要任務：真實情報檢索與分析】
-            請使用 Google Search 搜尋「${brandName} ${industry}」，深入了解該企業真實的官方網站、社群媒體或產品項目。
-
-            【企業設定參數】
-            品牌：${brandName} | 產業：${industry} | 商業模式：${businessModel}
+            任務：檢索並生成 LINE OA 企劃書。
+            品牌：${brandName} | 產業：${industry} | 模式：${businessModel}
             痛點：${painPoints} | 需求：${needsText}
-            🎯 首要商業目標：${mainGoal} | 🎭 品牌對話語氣：${brandTone} | 👥 目標客群(TA)：${targetAudience}
-
-            【請以 Markdown 格式輸出以下顧問提案，請展現 TONY 老師的專業深度，並用段落與條列式穿插論述】
-
-            (開場白請一律使用以下格式並自動填入資訊)
-            您好，${brandName}！我是您的專屬 LINE OA 建置顧問 TONY 老師。
-            非常高興能與您合作，將「${brandName}」的 LINE OA 從單純的訊息發布平台，升級為一個高效、智能的客戶經營系統。針對您的產業特性與「${mainGoal}」的目標，以下是為您量身打造的專屬策略規劃：
-
-            ## 0. 🔍 企業實況情報分析
-            - **真實品牌樣貌**：(用專業顧問的口吻，根據搜尋結果，精闢總結該品牌實際的主力產品/服務與核心優勢)
-            - **數位足跡現況**：(簡述其目前網路聲量或數位佈局現況)
-
-            ## 1. 產業診斷與帳號定位策略
-            - **建置適配度**：(用一段完整的論述，評估該產業使用 LINE OA 的契合度與優勢，為什麼他們需要？)
-            - **帳號角色定位**：(具體說明，例如：專業形象塑造與知識中心、潛在客戶開發等)
-            - **三大主要用途與優先功能**：(針對勾選的需求與痛點，列出前三優先建置的功能，並深入說明「為什麼」這能解決他們的問題)
-
-            ## 2. 圖文選單架構與文案規劃
-            **⚠️ 【顧問實務提醒】LINE 官方規定圖文選單圖片檔案大小不得超過 1MB，請務必提醒業者在製圖與匯出時進行圖片壓縮。**
+            目標：${mainGoal} | 語氣：${brandTone} | 風格：${designStyle}
             
-            請套用【${designStyle}】，且首要按鈕必須能直接解決【${mainGoal}】。請產出 6 格規劃：
-            | 區塊位置 | 按鈕呈現文案 (動詞開頭, 2-6 字, 需融入真實產品/服務) | 連結類型 / 觸發目的 | 設計思維 (色彩、icon 與如何引導客戶的專業說明) |
-            | :--- | :--- | :--- | :--- |
-            (輸出 6 格完整表格)
-
-            ## 3. 真實產業型專屬文案生成
-            ⚠️ 必須嚴格使用【${brandTone}】的語氣，針對【${targetAudience}】來對話，並提及真實產品：
-            - **【歡迎訊息範本】**：(包含熱情招呼、品牌價值介紹、以及明確的 CTA 行動引導，文字要有溫度與厚度)
-            - **【常見問題(FAQ)自動回覆建議】**：(列出 3 組高頻關鍵字，並提供完整、專業的解答文案，不要只有十個字)
-            - **【促銷/互動推播範例】**：(示範一則具備吸引力的推播圖文結構，包含主視覺建議、標題、內文與行動呼籲)
-
-            ## 4. 客戶旅程流程設計
-            請設計專屬的轉換流程，每個階段都要有「具體作法」的專業說明：
-            - **階段 1：加好友誘因 (如何吸引接觸點的客群)**：(專業建議)
-            - **階段 2：歡迎後第一步 (初次互動)**：(專業建議)
-            - **階段 3：轉換節點 (如何引導至詢價、預約或購買)**：(專業建議)
-            - **階段 4：售後與回流經營 (喚回與會員經營)**：(專業建議)
-
-            ## 5. TONY 顧問經營建議與 SOP
-            - **每週/每月經營建議**：(推播頻率、內容主題與分眾標籤的專業建議)
-            - **針對痛點的解方**：(針對「${painPoints}」，提出 TONY 老師的獨家破解策略)
-            - **經營錯誤提醒**：(點出該產業常見的 LINE OA 經營盲點與避坑指南)
-
-            ---
-            [🎯 TONY顧問企劃產出完畢]
+            請先使用 Search 檢索品牌資訊，接著以此真實資訊為基底，融合 TONY 老師的顧問思維，產出嚴格符合 Schema 的高含金量 JSON。
             `;
 
             try {
-                // 模型升級為 gemini-3.5-flash
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+                // Endpoint uses the official gemini-3.8-flash for high performance
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -908,155 +634,181 @@
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: userPrompt }] }],
                         systemInstruction: { parts: [{ text: systemInstruction }] },
-                        tools: [{ "google_search": {} }], 
+                        tools: [{ "google_search": {} }],
                         generationConfig: {
-                            temperature: 0.5,
-                            topK: 40,
-                            topP: 0.95
-                            // 已經刻意移除 maxOutputTokens，開放最大產出
+                            temperature: 0.2, // Lower temp for more stable JSON structure
+                            responseMimeType: "application/json" // Hint native JSON support if applicable
                         }
                     })
                 });
 
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error?.message || 'API 呼叫失敗，請檢查 API Key。');
-                }
+                if (!response.ok) throw new Error(data.error?.message || 'API 呼叫失敗。');
 
                 if (data.candidates && data.candidates[0].content?.parts[0]?.text) {
-                    let markdownText = data.candidates[0].content.parts[0].text;
+                    const rawText = data.candidates[0].content.parts[0].text;
                     
-                    let isTruncated = false;
-                    if (!markdownText.includes('[🎯 TONY顧問企劃產出完畢]')) {
-                        isTruncated = true;
-                    } else {
-                        markdownText = markdownText.replace('[🎯 TONY顧問企劃產出完畢]', '');
-                    }
-
-                    markdownText = markdownText.replace(/^```markdown\n/, '').replace(/\n```$/, '');
-                    document.getElementById('markdownOutput').innerHTML = marked.parse(markdownText);
+                    // Robust JSON Extraction
+                    const parsedData = extractAndParseJSON(rawText);
                     
-                    if (isTruncated) {
-                        document.getElementById('truncationWarning').classList.remove('hidden');
-                    }
-
+                    // Render UI from Parsed JSON
+                    document.getElementById('reportContainer').innerHTML = renderReportHTML(parsedData);
+                    
+                    // Extract Grounding Data
                     let sourcesHtml = '';
-                    try {
-                        const groundingMetadata = data.candidates[0].groundingMetadata;
-                        if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                            const uniqueSources = new Map();
-                            groundingMetadata.groundingAttributions.forEach(attr => {
-                                if (attr.web && attr.web.uri && attr.web.title) {
-                                    uniqueSources.set(attr.web.uri, attr.web.title);
-                                }
-                            });
-                            if (uniqueSources.size > 0) {
-                                uniqueSources.forEach((title, uri) => {
-                                    sourcesHtml += `<li><a href="${uri}" target="_blank" class="hover:underline">${title}</a></li>`;
-                                });
-                                document.getElementById('sourcesList').innerHTML = sourcesHtml;
-                                document.getElementById('groundingSources').classList.remove('hidden');
-                            }
-                        }
-                    } catch (e) { console.log("Grounding parse error", e); }
-
-                    // Save to Cloud & Local Memory
-                    await saveToHistory(brandName, fullIndustryStr, markdownText, sourcesHtml);
+                    const grounding = data.candidates[0].groundingMetadata?.groundingAttributions;
+                    if (grounding) {
+                        const uniqueSources = new Map();
+                        grounding.forEach(attr => { if (attr.web?.uri) uniqueSources.set(attr.web.uri, attr.web.title); });
+                        uniqueSources.forEach((title, uri) => {
+                            sourcesHtml += `<li><a href="${uri}" target="_blank" class="hover:underline">${title}</a></li>`;
+                        });
+                    }
                     
-                    showState('resultState');
-                    if(window.innerWidth < 1024) {
-                        document.getElementById('resultState').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const sourcesDiv = document.getElementById('groundingSources');
+                    if (sourcesHtml) {
+                        document.getElementById('sourcesList').innerHTML = sourcesHtml;
+                        sourcesDiv.classList.remove('hidden');
                     } else {
-                        window.scrollTo({top: 0, behavior: 'smooth'});
+                        sourcesDiv.classList.add('hidden');
                     }
 
+                    // Save Stringified JSON to history
+                    await saveToHistory(brandName, fullIndustryStr, JSON.stringify(parsedData), sourcesHtml);
+                    showState('resultState');
+                    document.getElementById('resultState').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 } else {
-                    throw new Error('API 返回內容為空，請稍後再試。');
+                    throw new Error('AI 返回內容為空。');
                 }
-
             } catch (error) {
-                console.error("Gemini API Error:", error);
+                console.error("API or Parsing Error:", error);
                 showState('emptyState');
-                showCustomAlert('發生錯誤', error.message, true);
+                showCustomAlert('處理失敗', error.message, true);
             }
+        }
+
+        async function saveToHistory(brandName, industry, contentString, sourcesHtml) {
+            const docId = `doc_${Date.now()}`;
+            const newItem = { id: docId, timestamp: Date.now(), brandName, industry, content: contentString, sources: sourcesHtml };
+            if (db && currentUserId) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'history', docId), newItem); } 
+                catch(e) { console.error("Cloud save failed:", e); fallbackLocalSave(newItem); }
+            } else { fallbackLocalSave(newItem); }
+        }
+
+        function fallbackLocalSave(newItem) {
+            localHistoryState.unshift(newItem);
+            if(localHistoryState.length > 20) localHistoryState.pop();
+            renderHistoryList();
+        }
+
+        window.deleteHistory = async (id) => {
+            if (db && currentUserId) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'history', id)); } 
+                catch(e) { console.error("Cloud del failed:", e); }
+            } else {
+                localHistoryState = localHistoryState.filter(i => i.id !== id);
+                renderHistoryList();
+            }
+        };
+
+        window.loadHistoryIntoView = (id) => {
+            const item = localHistoryState.find(h => h.id === id);
+            if (!item) return;
+
+            document.getElementById('reportBrand').innerText = item.brandName;
+            document.getElementById('reportIndustry').innerText = item.industry;
+            
+            // Backward compatibility check: Try to parse as JSON, if fail, render as pure Markdown
+            try {
+                const parsedJSON = extractAndParseJSON(item.content);
+                document.getElementById('reportContainer').innerHTML = renderReportHTML(parsedJSON);
+            } catch(e) {
+                document.getElementById('reportContainer').innerHTML = marked.parse(item.content);
+            }
+            
+            const sourcesDiv = document.getElementById('groundingSources');
+            if (item.sources) { document.getElementById('sourcesList').innerHTML = item.sources; sourcesDiv.classList.remove('hidden'); }
+            else sourcesDiv.classList.add('hidden');
+            
+            document.getElementById('brandName').value = item.brandName;
+            showState('resultState');
+            document.getElementById('resultState').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        function renderHistoryList() {
+            const list = document.getElementById('historyList');
+            document.getElementById('historyCount').innerText = `${localHistoryState.length} 筆`;
+            if (localHistoryState.length === 0) return list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">尚無紀錄</p>';
+            
+            list.innerHTML = '';
+            localHistoryState.forEach(item => {
+                const date = new Date(item.timestamp);
+                const dStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                list.innerHTML += `
+                <div class="history-item border border-gray-200 rounded p-2 cursor-pointer transition flex justify-between items-center group mb-2 bg-white">
+                    <div class="flex-grow overflow-hidden" onclick="loadHistoryIntoView('${item.id}')">
+                        <div class="font-bold text-sm text-gray-800 truncate">${item.brandName}</div>
+                        <div class="text-xs text-gray-500 flex justify-between"><span class="truncate pr-2">${item.industry}</span><span>${dStr}</span></div>
+                    </div>
+                    <button class="text-red-400 hover:text-red-600 px-2 opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation(); showCustomConfirm(() => deleteHistory('${item.id}'))">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>`;
+            });
         }
 
         function handleCopyReport() {
-            const content = document.getElementById('markdownOutput').innerText;
-            try {
-                const textArea = document.createElement("textarea");
-                textArea.value = content;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand("Copy");
-                textArea.remove();
-                
-                const btn = document.getElementById('btnCopyReport');
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> 已複製';
-                btn.classList.add('text-line', 'border-line');
-                setTimeout(() => {
-                    btn.innerHTML = originalHtml;
-                    btn.classList.remove('text-line', 'border-line');
-                }, 2000);
-            } catch (err) {
-                showCustomAlert('錯誤', '複製失敗，請手動選取複製。', true);
-            }
+            const content = document.getElementById('reportContainer').innerText;
+            const ta = document.createElement("textarea"); ta.value = content; document.body.appendChild(ta);
+            ta.select(); document.execCommand("Copy"); ta.remove();
+            
+            const btn = document.getElementById('btnCopyReport'); const html = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> 已複製'; btn.classList.add('text-line', 'border-line');
+            setTimeout(() => { btn.innerHTML = html; btn.classList.remove('text-line', 'border-line'); }, 2000);
         }
 
         function handleExportWord() {
-            const brand = document.getElementById('reportBrand').innerText || '品牌';
-            const industry = document.getElementById('reportIndustry').innerText || '';
-            const content = document.getElementById('markdownOutput').innerHTML;
-            const sourcesDiv = document.getElementById('groundingSources');
-            const sourcesContent = !sourcesDiv.classList.contains('hidden') ? sourcesDiv.innerHTML : '';
+            const brand = document.getElementById('reportBrand').innerText;
+            const industry = document.getElementById('reportIndustry').innerText;
+            const content = document.getElementById('reportContainer').innerHTML;
+            const sources = !document.getElementById('groundingSources').classList.contains('hidden') ? document.getElementById('groundingSources').innerHTML : '';
             
-            const html = `
-                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                <head>
-                    <meta charset='utf-8'>
-                    <title>LINE OA 商業轉換規劃書</title>
-                    <style>
-                        body { font-family: 'Microsoft JhengHei', Arial, sans-serif; line-height: 1.6; color: #333; }
-                        h1 { color: #06C755; font-size: 24pt; border-bottom: 2px solid #06C755; padding-bottom: 10px; }
-                        h2 { color: #1f2937; font-size: 16pt; margin-top: 20px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
-                        h3 { color: #374151; font-size: 14pt; }
-                        p { margin-bottom: 10px; font-size: 12pt; }
-                        ul { margin-bottom: 15px; }
-                        li { margin-bottom: 5px; font-size: 12pt; }
-                        strong { color: #111827; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px; border: 1px solid #000; }
-                        th, td { border: 1px solid #666; padding: 8px; text-align: left; font-size: 11pt; }
-                        th { background-color: #f3f4f6; font-weight: bold; }
-                        .footer { margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; text-align: right; font-size: 10pt; color: #666; }
-                        .sources { margin-top: 20px; padding: 10px; background-color: #f0f8ff; border: 1px solid #cce5ff; font-size: 10pt; }
-                    </style>
-                </head>
-                <body>
-                    <h1>LINE OA 商業轉換規劃書</h1>
-                    <p><strong>專屬品牌：</strong>${brand}</p>
-                    <p><strong>產業類型：</strong>${industry}</p>
-                    <hr>
-                    ${content}
-                    ${sourcesContent ? `<div class="sources">${sourcesContent}</div>` : ''}
-                    <div class="footer">
-                        <p><strong>規劃顧問：TONY 楊文澤</strong></p>
-                        <p>百工百業 LINE OA商業轉換規劃顧問助手 生成</p>
-                    </div>
-                </body>
-                </html>
-            `;
+            const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>LINE OA 商業轉換規劃書</title><style>body { font-family: 'Microsoft JhengHei', sans-serif; line-height: 1.6; } h1 { color: #06C755; font-size: 24pt; border-bottom: 2px solid #06C755; } h2 { font-size: 16pt; margin-top: 20px; border-bottom: 1px solid #ccc; } table { width: 100%; border-collapse: collapse; margin-top: 15px; } th, td { border: 1px solid #666; padding: 8px; text-align: left; } th { background-color: #f3f4f6; } .footer { margin-top: 40px; border-top: 1px solid #ccc; text-align: right; color: #666; }</style></head>
+            <body><h1>LINE OA 商業轉換規劃書</h1><p><strong>品牌：</strong>${brand}</p><p><strong>產業：</strong>${industry}</p><hr>${content}${sources ? `<div style="margin-top:20px; background:#f0f8ff; padding:10px; font-size:10pt;">${sources}</div>` : ''}<div class="footer"><p>規劃顧問：TONY 楊文澤</p><p>© 2020 TonyStudio (TONY 楊文澤顧問). All Rights Reserved.</p></div></body></html>`;
 
             const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `LINE_OA規劃提案_${brand}.doc`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = url; a.download = `LINE_OA企劃_${brand}.doc`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
+
+        function handleExportLocalJSON() {
+            if (!localHistoryState.length) return showCustomAlert('提示', '沒有紀錄可匯出。');
+            const blob = new Blob([JSON.stringify(localHistoryState, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `TONY_顧問紀錄_${Date.now()}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        function handleImportLocalJSON(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result); if (!Array.isArray(data)) throw new Error();
+                    for (const item of data) {
+                        if (item.id && item.brandName) {
+                            if (db && currentUserId) await setDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'history', item.id), item);
+                            else if(!localHistoryState.find(x => x.id === item.id)) localHistoryState.push(item);
+                        }
+                    }
+                    if(!db) { localHistoryState.sort((a, b) => b.timestamp - a.timestamp); renderHistoryList(); }
+                    showCustomAlert('匯入成功', `成功匯入備份。`);
+                } catch { showCustomAlert('匯入失敗', '檔案格式錯誤。', true); }
+                e.target.value = '';
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
